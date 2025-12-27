@@ -22,6 +22,7 @@ pipeline {
                         if [ ! -d "venv" ]; then
                             echo "Creating venv..."
                             python3 -m venv venv
+                            ./venv/bin/pip install --upgrade pip
                             ./venv/bin/pip install --no-cache-dir pandas nltk
                         else
                             echo "venv already exists. Skipping creation."
