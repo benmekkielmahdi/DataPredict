@@ -1,0 +1,120 @@
+services:
+  consul:
+    image: hashicorp/consul:latest
+    ports:
+      - "8501:8500"
+    command: agent -dev -ui -client 0.0.0.0
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: datapredict_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8090:80"
+    environment:
+      PMA_HOST: mysql
+    depends_on:
+      - mysql
+
+  preprocessing-service:
+    build: "./Preprocessing_Service"
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/preprocessing_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    restart: on-failure
+    depends_on:
+      consul:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./Preprocessing_Service/uploads:/app/uploads
+      - ./Preprocessing_Service/export:/app/export
+
+  featureselection-service:
+    build: "./FeatureSelection 2"
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+    depends_on:
+      - consul
+
+  microservice-auth:
+    build: "./MicroService Auth"
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    restart: on-failure
+    depends_on:
+      consul:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+
+  modelrecommendation-service:
+    build: "./ModelRecommendation"
+    ports:
+      - "8084:8084"
+    environment:
+      - CONSUL_HOST=consul
+    depends_on:
+      - consul
+
+  aitraining-service:
+    build: "./AITrainingService"
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/training_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    volumes:
+      - ./Preprocessing_Service/uploads:/app/datasets/uploads
+      - ./Preprocessing_Service/export:/app/datasets/export
+    restart: on-failure
+    depends_on:
+      consul:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+
+  api-gateway:
+    build: "./api-gateway"
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+    depends_on:
+      - consul
+      - preprocessing-service
+      - featureselection-service
+      - modelrecommendation-service
+
+  frontend:
+    build: "./DataPredict Frontend"
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway

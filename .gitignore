@@ -1,0 +1,43 @@
+# OS
+.DS_Store
+
+# Maven / Java
+**/target/
+*.jar
+*.class
+
+# Node / React
+**/node_modules/
+.npm
+.eslintcache
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Uploads & data (ignore everything in these folders)
+uploads/
+**/uploads/
+export/
+**/export/
+*.csv
+
+# Sensitive files (ignore all JSON by default, except essential config)
+**.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!project.json
+!composer.json
+!app.json
+!expo.json
+!*.metadata.json
+
+# Specific sensitive files
+google-services.json
+firebase-service-account.json
+
+# Logs
+*.log
