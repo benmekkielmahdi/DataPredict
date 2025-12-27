@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Defines the scanner home if installed as a tool called 'SonarScanner' in Jenkins Global Configuration
-        SCANNER_HOME = tool 'SonarScanner' 
+        // Définit l'outil SonarScanner (doit correspondre au nom dans Jenkins Global Tool Configuration)
+        SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
@@ -13,34 +13,30 @@ pipeline {
             }
         }
 
-        stage('Setup Python Dependencies') {
-    steps {
-        script {
-            echo 'Creating Virtual Environment and installing dependencies...'
-            sh '''
-                # 1. Créer l'environnement virtuel dans le dossier 'venv'
-                python3 -m venv venv
-                
-                # 2. Installer les packages à l'intérieur du venv
-                ./venv/bin/pip install --no-cache-dir pandas nltk
-                
-                # 3. Télécharger les données NLTK via le venv
-                ./venv/bin/python -m nltk.downloader punkt
-                
-                # 4. Créer le dossier bin local pour tromper le code Java
-                mkdir -p bin
-                
-                # 5. LIEN CRUCIAL : On fait pointer 'python' vers le python du VENV
-                # On utilise $(pwd) pour avoir le chemin complet (absolu)
-                ln -sf $(pwd)/venv/bin/python ./bin/python
-                
-                echo "Python Virtual Environment ready."
-            '''
+        stage('Setup Python (Workspace)') {
+            steps {
+                script {
+                    echo 'Configuring global Python environment for Java tests...'
+                    sh '''
+                        # 1. Créer un environnement virtuel au niveau du workspace
+                        python3 -m venv venv
+                        
+                        # 2. Installer les dépendances nécessaires aux tests Java
+                        ./venv/bin/pip install --no-cache-dir pandas nltk
+                        
+                        # 3. Télécharger les données NLTK
+                        ./venv/bin/python -m nltk.downloader punkt
+                        
+                        # 4. Créer un dossier bin local et un lien symbolique 'python'
+                        mkdir -p bin
+                        ln -sf $(pwd)/venv/bin/python ./bin/python
+                        
+                        echo "Python environment ready in ./bin"
+                    '''
+                }
+            }
         }
-    }
-}
-    }
-}
+
         stage('Build & Test (Java)') {
             steps {
                 script {
@@ -52,16 +48,18 @@ pipeline {
                         'FeatureSelection 2'
                     ]
                     
-                    javaProjects.each { project ->
-                        dir(project) {
-                            echo "Building and Testing Java Project: ${project}"
-                            // Ensure mvnw is executable
-                            sh 'chmod +x mvnw || true'
-                            // Use Maven Wrapper if available, else system maven
-                            if (fileExists('mvnw')) {
-                                sh './mvnw clean package -DskipTests=false'
-                            } else {
-                                sh 'mvn clean package -DskipTests=false'
+                    // On ajoute notre dossier bin au PATH pour que Java trouve 'python'
+                    withEnv(["PATH+PYTHON=${WORKSPACE}/bin"]) {
+                        javaProjects.each { project ->
+                            dir(project) {
+                                echo "Building Java Project: ${project}"
+                                sh 'chmod +x mvnw || true'
+                                
+                                if (fileExists('mvnw')) {
+                                    sh './mvnw clean package -DskipTests=false'
+                                } else {
+                                    sh 'mvn clean package -DskipTests=false'
+                                }
                             }
                         }
                     }
@@ -77,21 +75,17 @@ pipeline {
                     pythonProjects.each { project ->
                         dir(project) {
                             if (fileExists('requirements.txt')) {
-                                echo "Building and Testing Python Project: ${project}"
+                                echo "Building Python Project: ${project}"
                                 sh '''
-                                    # Create virtual environment to isolate dependencies
+                                    # Création d'un venv spécifique au module
                                     python3 -m venv venv
                                     . venv/bin/activate
-                                    
-                                    # Install dependencies
                                     pip install --upgrade pip
                                     pip install -r requirements.txt
                                     pip install pytest pytest-cov
                                     
-                                    # Run tests
-                                    # Assuming tests are in 'tests' directory or standard layout
                                     if [ -d "tests" ] || ls test_*.py 1> /dev/null 2>&1; then
-                                        python3 -m pytest --cov=. --cov-report=xml
+                                        python -m pytest --cov=. --cov-report=xml
                                     else
                                         echo "No tests found for ${project}"
                                     fi
@@ -105,35 +99,27 @@ pipeline {
 
         stage('Static Analysis (SonarQube)') {
             steps {
-                withSonarQubeEnv('DOCKER_SONAR') { // Match the name in Jenkins Configure System
+                // 'DOCKER_SONAR' doit correspondre au nom dans Jenkins > Configurer le système
+                withSonarQubeEnv('DOCKER_SONAR') {
                     sh """
                         ${SCANNER_HOME}/bin/sonar-scanner \
                         -Dsonar.projectKey=DataPredict \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://sonarqube:9000 \
-                        -Dsonar.login=\${SONAR_AUTH_TOKEN}
+                        -Dsonar.host.url=http://sonarqube:9000
                     """
                 }
             }
         }
-
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 1, unit: 'HOURS') {
-        //             // Waits for the result of the analysis (Webhook)
-        //             // Ensure a Webhook is configured in SonarQube pointing to Jenkins
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // }
     }
     
     post {
         always {
+            // Affiche les résultats des tests unitaires dans Jenkins
+            junit '**/target/surefire-reports/*.xml', allowEmptyResults: true
             cleanWs()
         }
         failure {
-            echo 'Pipeline failed. Please check logs.'
+            echo 'Le pipeline a échoué. Vérifiez les logs de compilation ou de tests.'
         }
     }
 }
