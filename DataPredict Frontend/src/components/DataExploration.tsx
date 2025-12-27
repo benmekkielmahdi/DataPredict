@@ -191,18 +191,32 @@ export function DataExploration() {
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="card">
+<<<<<<< HEAD
           <div className=" text-sm  text-gray-600 mb-1">Lignes</div>
           <div className="page-title text-xl font-bold">
+=======
+          <div className="text-sm text-force-black mb-1 font-medium">Lignes</div>
+          <div className="text-force-black text-xl font-bold">
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
             {totalRows.toLocaleString()}
           </div>
         </div>
         <div className="card">
+<<<<<<< HEAD
           <div className=" text-sm  text-gray-600 mb-1">Colonnes</div>
           <div className="page-title text-xl font-bold">{totalCols}</div>
         </div>
         <div className="card">
           <div className=" text-sm  text-gray-600 mb-1">Manquantes</div>
           <div className="page-title text-xl font-bold">
+=======
+          <div className="text-sm text-force-black mb-1 font-medium">Colonnes</div>
+          <div className="text-force-black text-xl font-bold">{totalCols}</div>
+        </div>
+        <div className="card">
+          <div className="text-sm text-force-black mb-1 font-medium">Manquantes</div>
+          <div className="text-force-black text-xl font-bold">
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
             {totalMissingPercentage}
           </div>
         </div>

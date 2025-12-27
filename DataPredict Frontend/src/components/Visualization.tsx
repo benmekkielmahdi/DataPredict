@@ -50,6 +50,11 @@ export function Visualization() {
             const metrics = JSON.parse(data.fullMetrics);
             const results = {
               bestModel: data.modelName,
+<<<<<<< HEAD
+=======
+              type: data.type,
+              datasetName: data.datasetName,
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
               comparison: {
                 [data.modelName]: metrics
               }
@@ -66,17 +71,33 @@ export function Visualization() {
   const trainingResults = fetchedResults || workflowState.trainingResults || location.state?.trainingResults;
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+<<<<<<< HEAD
   const isRegression = workflowState.featureSelectionResult?.mode?.toLowerCase() === 'regression' ||
     workflowState.recommendations?.[0]?.task?.toLowerCase() === 'regression' ||
     (trainingResults?.comparison && trainingResults?.bestModel && !!trainingResults.comparison[trainingResults.bestModel]?.mse) || (fetchedResults && !!fetchedResults.comparison[fetchedResults.bestModel]?.mse);
 
   const [activeTab, setActiveTab] = useState<'confusion' | 'roc' | 'importance' | 'learning' | 'regression' | 'residuals'>(
+=======
+  // FIX: Determine task type from actual results if available, to avoid mixing with current workflow state
+  const isRegression = fetchedResults
+    ? (fetchedResults.type?.toLowerCase() === 'regression' || !!fetchedResults.comparison[fetchedResults.bestModel]?.mse)
+    : (workflowState.featureSelectionResult?.mode?.toLowerCase() === 'regression' ||
+      workflowState.recommendations?.[0]?.task?.toLowerCase() === 'regression' ||
+      (trainingResults?.comparison && trainingResults?.bestModel && !!trainingResults.comparison[trainingResults.bestModel]?.mse));
+
+  const [activeTab, setActiveTab] = useState<'confusion' | 'importance' | 'learning' | 'regression' | 'residuals'>(
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     'confusion'
   );
 
   useEffect(() => {
     if (isRegression) {
       setActiveTab('regression');
+<<<<<<< HEAD
+=======
+    } else {
+      setActiveTab('confusion');
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     }
   }, [isRegression]);
 
@@ -168,7 +189,10 @@ export function Visualization() {
 
   const classMetrics = calculateClassMetrics();
 
+<<<<<<< HEAD
   const rocCurveData = metrics.roc_curve || [];
+=======
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 
   // Enhanced regression data with residuals
   const regressionData = metrics.predictions?.map((p: number, i: number) => ({
@@ -237,7 +261,10 @@ export function Visualization() {
     { id: 'confusion', label: 'Matrice de confusion', icon: Target, hidden: isRegression || !metrics.confusion_matrix },
     { id: 'regression', label: 'Prédictions vs Réel', icon: TrendingUp, hidden: !isRegression },
     { id: 'residuals', label: 'Analyse des résidus', icon: Activity, hidden: !isRegression },
+<<<<<<< HEAD
     { id: 'roc', label: 'Courbe ROC', icon: Activity, hidden: isRegression || !metrics.roc_curve },
+=======
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     { id: 'importance', label: 'Importance features', icon: Layers, hidden: !metrics.feature_importance },
     { id: 'learning', label: 'Apprentissage', icon: BarChart3, hidden: !metrics.learning_curve },
   ].filter(t => !t.hidden);
@@ -508,6 +535,7 @@ export function Visualization() {
           </div>
         )}
 
+<<<<<<< HEAD
         {/* ROC Curve */}
         {activeTab === 'roc' && rocCurveData.length > 0 && (
           <div className="animation-slide-up">
@@ -533,6 +561,8 @@ export function Visualization() {
             </div>
           </div>
         )}
+=======
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 
         {/* Feature Importance */}
         {activeTab === 'importance' && featureImportanceData.length > 0 && (

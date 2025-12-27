@@ -115,5 +115,47 @@ Ce projet est sous licence **MIT**.
 
 ---
 
+<<<<<<< HEAD
 ## Démonstration
+=======
+## Démonstrations
+
+## Web App Demo 1 (Classification)
+
+
+
+https://github.com/user-attachments/assets/0a06d9b8-a94c-41b2-94cf-a38687d48f61
+
+
+
+## Web App Demo 2 (Régression)
+
+
+
+
+
+https://github.com/user-attachments/assets/53922492-b29c-4ab1-8638-f320b16bc37b
+
+
+
+## Web App Demo 3 (Classification + NLP)
+
+
+https://github.com/user-attachments/assets/f16fbb84-120d-4fe1-bcc4-86af9c7a0ddc
+
+
+
+## Mobile App Demo 1
+
+https://github.com/user-attachments/assets/d2dd1f0f-b85a-4b9f-a66c-372fe94bee4c
+
+
+
+## Mobile App Demo 2
+
+https://github.com/user-attachments/assets/d9a256b3-46c5-4350-ac19-e9024852f2ea
+
+
+
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 

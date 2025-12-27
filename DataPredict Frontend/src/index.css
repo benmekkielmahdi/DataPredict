@@ -136,4 +136,12 @@
     background: #e2e8f0;
     border-radius: 3px;
   }
+<<<<<<< HEAD
 }
+=======
+}
+/* Force black text color for card labels */
+.text-force-black {
+  color: #000000 !important;
+}
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4

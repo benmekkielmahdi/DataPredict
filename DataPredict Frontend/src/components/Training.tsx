@@ -88,6 +88,41 @@ export function Training() {
         return;
       }
 
+<<<<<<< HEAD
+=======
+      // CHECK: If training results already exist in state, do not re-train.
+      if (state.trainingResults && state.trainingResults.comparison) {
+        console.log("Training results found in state, skipping re-training.");
+        const result = state.trainingResults;
+        const comparison = result.comparison;
+
+        // Reconstruct modelResults from the stored comparison data
+        const restoredResults: ModelResult[] = Object.keys(comparison).map(modelName => {
+          const metrics = comparison[modelName];
+          const numericMetrics: Record<string, number> = {};
+
+          Object.keys(metrics).forEach(key => {
+            if (typeof metrics[key] === 'number') {
+              numericMetrics[key] = metrics[key];
+            }
+          });
+
+          return {
+            modelName: modelName,
+            metrics: numericMetrics,
+            trainingTime: metrics.trainingTime ?? 0,
+            status: 'completed' as const
+          };
+        });
+
+        setModelResults(restoredResults);
+        setProgress(100);
+        setIsComplete(true);
+        setCurrentStep(4);
+        return;
+      }
+
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
       setError(null);
       setProgress(0);
       setIsComplete(false);

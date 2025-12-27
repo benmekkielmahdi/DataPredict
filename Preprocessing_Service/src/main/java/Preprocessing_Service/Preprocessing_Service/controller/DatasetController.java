@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package Preprocessing_Service.Preprocessing_Service.controller;
 
 import Preprocessing_Service.Preprocessing_Service.dto.DatasetExportDTO;
@@ -121,3 +122,128 @@ public class DatasetController {
         }
     }
 }
+=======
+package Preprocessing_Service.Preprocessing_Service.controller;
+
+import Preprocessing_Service.Preprocessing_Service.dto.DatasetExportDTO;
+import Preprocessing_Service.Preprocessing_Service.service.PreprocessingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/datasets")
+public class DatasetController {
+
+    @Autowired
+    private PreprocessingService preprocessingService;
+
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadDataset(@RequestParam("file") MultipartFile file,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "userId", defaultValue = "1") Long userId) {
+        try {
+            System.out
+                    .println("DEBUG: Receive upload params: userId=" + userId + ", file=" + file.getOriginalFilename());
+            return ResponseEntity.ok(preprocessingService.importDataset(file, description, userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error importing dataset: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<String> getStats(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.ok(preprocessingService.getDatasetStats(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error generating stats: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<?> getPreview(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.ok(preprocessingService.getDatasetPreview(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error generating preview: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/preprocess")
+    public ResponseEntity<?> preprocess(@PathVariable("id") Long id,
+            @RequestBody Map<String, Object> config,
+            @RequestParam(value = "userId", required = false) Long userId) {
+        try {
+            Long finalUserId = userId;
+            // Fallback: Check if userId is present in the request body (config)
+            if (finalUserId == null && config.containsKey("userId")) {
+                Object uIdObj = config.get("userId");
+                if (uIdObj instanceof Number) {
+                    finalUserId = ((Number) uIdObj).longValue();
+                } else if (uIdObj instanceof String) {
+                    try {
+                        finalUserId = Long.parseLong((String) uIdObj);
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                }
+            }
+            // Default to 1 if still not found (legacy behavior fallback)
+            if (finalUserId == null) {
+                finalUserId = 1L;
+            }
+
+            System.out.println(
+                    "DEBUG: Receive preprocess params: userId=" + finalUserId + " (after resolution), datasetId=" + id);
+            String configJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(config);
+            return ResponseEntity.ok(preprocessingService.applyPreprocessing(id, configJson, finalUserId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error preprocessing: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/export")
+    public ResponseEntity<?> exportDataset(@PathVariable("id") Long id) {
+        try {
+            DatasetExportDTO exportData = preprocessingService.exportDatasetInfo(id);
+            return ResponseEntity.ok(exportData);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error exporting dataset: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/nlp-analyze")
+    public ResponseEntity<?> analyzeTextWithNLP(@PathVariable("id") Long id,
+            @RequestBody Map<String, Object> params) {
+        try {
+            @SuppressWarnings("unchecked")
+            java.util.List<String> textColumns = (java.util.List<String>) params.get("text_columns");
+            String result = preprocessingService.analyzeTextWithNLP(id, textColumns);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error analyzing text: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("")
+    public ResponseEntity<?> getAllDatasets() {
+        try {
+            return ResponseEntity.ok(preprocessingService.getAllDatasets());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching datasets: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getDashboardStats() {
+        try {
+            return ResponseEntity.ok(preprocessingService.getDashboardStats());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching dashboard stats: " + e.getMessage());
+        }
+    }
+}
+>>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
