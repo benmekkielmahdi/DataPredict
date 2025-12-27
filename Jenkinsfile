@@ -17,6 +17,7 @@ pipeline {
             steps {
                 script {
                     echo 'Configuring global Python environment and NLTK data...'
+                    sh '''
                         # 1. Vérifier si l'environnement virtuel existe déjà
                         if [ ! -d "venv" ]; then
                             echo "Creating venv..."
@@ -40,6 +41,7 @@ pipeline {
                         ln -sf $(pwd)/venv/bin/python ./bin/python
                         
                         echo "Python environment and NLTK data ready."
+                    '''
                 }
             }
         }
