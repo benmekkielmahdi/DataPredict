@@ -16,22 +16,29 @@ pipeline {
         stage('Setup Python Dependencies') {
     steps {
         script {
-            echo 'Configuring Python environment for FeatureSelection...'
+            echo 'Creating Virtual Environment and installing dependencies...'
             sh '''
-                # 1. Installer les bibliothèques en mode "user" (pas besoin de root)
-                # On utilise --user pour installer dans /var/jenkins_home/.local
-                pip3 install --user --no-cache-dir pandas nltk
+                # 1. Créer l'environnement virtuel dans le dossier 'venv'
+                python3 -m venv venv
                 
-                # 2. Préparer le dossier local pour le lien symbolique
+                # 2. Installer les packages à l'intérieur du venv
+                ./venv/bin/pip install --no-cache-dir pandas nltk
+                
+                # 3. Télécharger les données NLTK via le venv
+                ./venv/bin/python -m nltk.downloader punkt
+                
+                # 4. Créer le dossier bin local pour tromper le code Java
                 mkdir -p bin
                 
-                # 3. Créer un lien symbolique LOCAL (dans le dossier du projet)
-                # Cela évite de toucher à /usr/bin/
-                ln -sf /usr/bin/python3 ./bin/python
+                # 5. LIEN CRUCIAL : On fait pointer 'python' vers le python du VENV
+                # On utilise $(pwd) pour avoir le chemin complet (absolu)
+                ln -sf $(pwd)/venv/bin/python ./bin/python
                 
-                echo "Python setup complete in local workspace"
+                echo "Python Virtual Environment ready."
             '''
         }
+    }
+}
     }
 }
         stage('Build & Test (Java)') {
