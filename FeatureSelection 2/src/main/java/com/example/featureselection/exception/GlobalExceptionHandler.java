@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,18 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<Object> handleMissingPart(MissingServletRequestPartException ex) {
+        log.warn("Missing Request Part: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Object> handleMissingParam(MissingServletRequestParameterException ex) {
+        log.warn("Missing Request Parameter: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -31,6 +45,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception ex) {
+        // Unwrap RuntimeException if it wraps an IllegalArgumentException
+        if (ex instanceof RuntimeException && ex.getCause() instanceof IllegalArgumentException) {
+            log.warn("Bad Request (Wrapped): {}", ex.getCause().getMessage());
+            return buildResponse(HttpStatus.BAD_REQUEST, ex.getCause().getMessage());
+        }
+
+        // Print stack trace to stderr to ensure it appears in Jenkins logs
+        ex.printStackTrace(); 
         log.error("Internal Server Error", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An internal error occurred: " + ex.getMessage());
     }

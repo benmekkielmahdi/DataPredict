@@ -234,7 +234,7 @@ public class FeatureSelectionService {
             boolean isClassification = detectMode(rows, targetIndex);
             String modeString = isClassification ? "CLASSIFICATION" : "REGRESSION";
             if (!textCols.isEmpty()) {
-                modeString += "";
+                modeString += " (Tokenized)";
             }
             log.info("Detected mode: {}", modeString);
 
