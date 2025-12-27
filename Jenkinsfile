@@ -14,37 +14,26 @@ pipeline {
         }
 
         stage('Setup Python Dependencies') {
-            steps {
-                script {
-                    echo 'Installing Python and dependencies for FeatureSelection service tests'
-                    sh '''
-                        # Check if python3 is available, install if missing
-                        if ! command -v python3 &> /dev/null; then
-                            echo "Python3 not found. Installing..."
-                            apt-get update
-                            apt-get install -y python3 python3-pip
-                        else
-                            echo "Python3 is already installed"
-                        fi
-                        
-                        # Verify Python installation
-                        python3 --version
-                        pip3 --version
-                        
-                        # Install required Python packages for FeatureSelection service
-                        pip3 install --no-cache-dir pandas nltk || pip3 install --break-system-packages pandas nltk
-                        
-                        # Create symlink if python command doesn't exist
-                        if ! command -v python &> /dev/null; then
-                            ln -s /usr/bin/python3 /usr/bin/python || true
-                        fi
-                        
-                        echo "Python setup complete"
-                    '''
-                }
-            }
+    steps {
+        script {
+            echo 'Configuring Python environment for FeatureSelection...'
+            sh '''
+                # 1. Installer les bibliothèques en mode "user" (pas besoin de root)
+                # On utilise --user pour installer dans /var/jenkins_home/.local
+                pip3 install --user --no-cache-dir pandas nltk
+                
+                # 2. Préparer le dossier local pour le lien symbolique
+                mkdir -p bin
+                
+                # 3. Créer un lien symbolique LOCAL (dans le dossier du projet)
+                # Cela évite de toucher à /usr/bin/
+                ln -sf /usr/bin/python3 ./bin/python
+                
+                echo "Python setup complete in local workspace"
+            '''
         }
-
+    }
+}
         stage('Build & Test (Java)') {
             steps {
                 script {
