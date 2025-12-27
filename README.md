@@ -135,7 +135,7 @@ https://github.com/user-attachments/assets/53922492-b29c-4ab1-8638-f320b16bc37b
 
 
 
-## Web App Demo 3 (Classification)
+## Web App Demo 3 (Classification + NLP)
 
 
 https://github.com/user-attachments/assets/f16fbb84-120d-4fe1-bcc4-86af9c7a0ddc
