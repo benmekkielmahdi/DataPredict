@@ -21,18 +21,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestPartException.class)
     public ResponseEntity<Object> handleMissingPart(MissingServletRequestPartException ex) {
+        System.out.println("DEBUG: MissingServletRequestPartException: " + ex.getMessage());
         log.warn("Missing Request Part: {}", ex.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Object> handleMissingParam(MissingServletRequestParameterException ex) {
+        System.out.println("DEBUG: MissingServletRequestParameterException: " + ex.getMessage());
         log.warn("Missing Request Parameter: {}", ex.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        System.out.println("DEBUG: IllegalArgumentException: " + ex.getMessage());
         log.warn("Bad Request: {}", ex.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
@@ -47,10 +50,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleAllExceptions(Exception ex) {
         // Unwrap RuntimeException if it wraps an IllegalArgumentException
         if (ex instanceof RuntimeException && ex.getCause() instanceof IllegalArgumentException) {
+            System.out.println("DEBUG: Wrapped IllegalArgumentException: " + ex.getCause().getMessage());
             log.warn("Bad Request (Wrapped): {}", ex.getCause().getMessage());
             return buildResponse(HttpStatus.BAD_REQUEST, ex.getCause().getMessage());
         }
 
+        System.out.println("DEBUG: Internal Server Error: " + ex.getClass().getName() + " - " + ex.getMessage());
         // Print stack trace to stderr to ensure it appears in Jenkins logs
         ex.printStackTrace(); 
         log.error("Internal Server Error", ex);

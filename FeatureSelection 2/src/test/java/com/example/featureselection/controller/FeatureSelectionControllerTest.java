@@ -49,7 +49,8 @@ class FeatureSelectionControllerTest {
         void testAnalyzeEndpointWithValidData() throws Exception {
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(validCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType("application/json"))
                                 .andExpect(jsonPath("$.selectedFeatures").isArray())
@@ -62,7 +63,8 @@ class FeatureSelectionControllerTest {
         void testAnalyzeEndpointWithSmallDataset() throws Exception {
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(smallCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType("application/json"))
                                 .andExpect(jsonPath("$.selectedFeatures").isArray())
@@ -74,8 +76,9 @@ class FeatureSelectionControllerTest {
         void testAnalyzeEndpointWithInvalidTarget() throws Exception {
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(validCsvFile)
-                                .param("targetFeature", "nonexistent"))
-                                .andExpect(status().is5xxServerError());
+                                .param("targetFeature", "nonexistent")
+                                .param("idUser", "testUser"))
+                                .andExpect(status().is4xxClientError());
         }
 
         @Test
@@ -102,8 +105,9 @@ class FeatureSelectionControllerTest {
 
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(emptyFile)
-                                .param("targetFeature", "target"))
-                                .andExpect(status().is5xxServerError());
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
+                                .andExpect(status().is4xxClientError());
         }
 
         @Test
@@ -116,15 +120,17 @@ class FeatureSelectionControllerTest {
 
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(invalidFile)
-                                .param("targetFeature", "target"))
-                                .andExpect(status().is5xxServerError());
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
+                                .andExpect(status().is4xxClientError());
         }
 
         @Test
         void testAnalyzeEndpointResponseStructure() throws Exception {
                 MvcResult result = mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(validCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andReturn();
 
@@ -139,7 +145,8 @@ class FeatureSelectionControllerTest {
         void testAnalyzeEndpointFeatureScoreStructure() throws Exception {
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(validCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.featureScores[0].featureName").exists())
                                 .andExpect(jsonPath("$.featureScores[0].finalScore").exists())
@@ -151,7 +158,8 @@ class FeatureSelectionControllerTest {
                 
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(smallCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.featureScores").isArray());
         }
@@ -160,7 +168,8 @@ class FeatureSelectionControllerTest {
         void testAnalyzeEndpointContentType() throws Exception {
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(validCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType("application/json"));
         }
@@ -169,7 +178,8 @@ class FeatureSelectionControllerTest {
         void testAnalyzeEndpointReturnsNonEmptyResult() throws Exception {
                 MvcResult result = mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(validCsvFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().isOk())
                                 .andReturn();
 
@@ -188,7 +198,8 @@ class FeatureSelectionControllerTest {
 
                 mockMvc.perform(multipart("/api/feature-selection/analyze")
                                 .file(wrongParamFile)
-                                .param("targetFeature", "target"))
+                                .param("targetFeature", "target")
+                                .param("idUser", "testUser"))
                                 .andExpect(status().is4xxClientError());
         }
 }
