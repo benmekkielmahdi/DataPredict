@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Définit l'outil SonarScanner (doit correspondre au nom dans Jenkins Global Tool Configuration)
+        // Définit l'outil SonarScanner
         SCANNER_HOME = tool 'SonarScanner'
     }
 
@@ -16,22 +16,23 @@ pipeline {
         stage('Setup Python (Workspace)') {
             steps {
                 script {
-                    echo 'Configuring global Python environment for Java tests...'
+                    echo 'Configuring global Python environment and NLTK data...'
                     sh '''
-                        # 1. Créer un environnement virtuel au niveau du workspace
+                        # 1. Créer l'environnement virtuel pour le workspace
                         python3 -m venv venv
                         
-                        # 2. Installer les dépendances nécessaires aux tests Java
+                        # 2. Installer les dépendances pour les services Java
                         ./venv/bin/pip install --no-cache-dir pandas nltk
                         
-                        # 3. Télécharger les données NLTK
-                        ./venv/bin/python -m nltk.downloader punkt
+                        # 3. FIX NLTK : Télécharger les modèles dans un dossier local (accessible par Jenkins)
+                        mkdir -p nltk_data
+                        ./venv/bin/python -m nltk.downloader -d ./nltk_data punkt
                         
-                        # 4. Créer un dossier bin local et un lien symbolique 'python'
+                        # 4. Créer un dossier bin pour "tromper" le PATH
                         mkdir -p bin
                         ln -sf $(pwd)/venv/bin/python ./bin/python
                         
-                        echo "Python environment ready in ./bin"
+                        echo "Python environment and NLTK data ready."
                     '''
                 }
             }
@@ -48,8 +49,11 @@ pipeline {
                         'FeatureSelection 2'
                     ]
                     
-                    // On ajoute notre dossier bin au PATH pour que Java trouve 'python'
-                    withEnv(["PATH+PYTHON=${WORKSPACE}/bin"]) {
+                    // On injecte le chemin vers Python et le dossier de données NLTK
+                    withEnv([
+                        "PATH+PYTHON=${WORKSPACE}/bin",
+                        "NLTK_DATA=${WORKSPACE}/nltk_data"
+                    ]) {
                         javaProjects.each { project ->
                             dir(project) {
                                 echo "Building Java Project: ${project}"
@@ -77,7 +81,7 @@ pipeline {
                             if (fileExists('requirements.txt')) {
                                 echo "Building Python Project: ${project}"
                                 sh '''
-                                    # Création d'un venv spécifique au module pour éviter les conflits
+                                    # Venv spécifique au module pour isoler les dépendances de prod
                                     python3 -m venv venv_module
                                     . venv_module/bin/activate
                                     pip install --upgrade pip
@@ -99,7 +103,6 @@ pipeline {
 
         stage('Static Analysis (SonarQube)') {
             steps {
-                // 'DOCKER_SONAR' doit correspondre au nom dans Jenkins > Configurer le système
                 withSonarQubeEnv('DOCKER_SONAR') {
                     sh """
                         ${SCANNER_HOME}/bin/sonar-scanner \
@@ -114,12 +117,12 @@ pipeline {
     
     post {
         always {
-            // CORRECTION : Les arguments doivent être nommés ici
+            // Publication des résultats de tests (obligatoire de nommer testResults)
             junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
             cleanWs()
         }
         failure {
-            echo 'Le pipeline a échoué. Vérifiez les logs de compilation ou de tests.'
+            echo 'Le pipeline a échoué. Vérifiez les erreurs de tests ci-dessus.'
         }
     }
 }
