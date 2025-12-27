@@ -77,9 +77,9 @@ pipeline {
                             if (fileExists('requirements.txt')) {
                                 echo "Building Python Project: ${project}"
                                 sh '''
-                                    # Création d'un venv spécifique au module
-                                    python3 -m venv venv
-                                    . venv/bin/activate
+                                    # Création d'un venv spécifique au module pour éviter les conflits
+                                    python3 -m venv venv_module
+                                    . venv_module/bin/activate
                                     pip install --upgrade pip
                                     pip install -r requirements.txt
                                     pip install pytest pytest-cov
@@ -114,8 +114,8 @@ pipeline {
     
     post {
         always {
-            // Affiche les résultats des tests unitaires dans Jenkins
-            junit '**/target/surefire-reports/*.xml', allowEmptyResults: true
+            // CORRECTION : Les arguments doivent être nommés ici
+            junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
             cleanWs()
         }
         failure {
