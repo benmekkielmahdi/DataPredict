@@ -1,0 +1,12 @@
+FROM jenkins/jenkins:lts-jdk17
+USER root
+
+# Install Python3, Pip, and Maven
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv maven && \
+    rm -rf /var/lib/apt/lists/*
+
+USER jenkins
+
+# Install suggested plugins
+RUN jenkins-plugin-cli --plugins blueocean sonar workflow-aggregator git
