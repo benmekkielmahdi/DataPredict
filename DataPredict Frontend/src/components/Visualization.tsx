@@ -50,149 +50,42 @@ export function Visualization() {
             const metrics = JSON.parse(data.fullMetrics);
             const results = {
               bestModel: data.modelName,
-<<<<<<< HEAD
-=======
-              type: data.type,
-              datasetName: data.datasetName,
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
-              comparison: {
-                [data.modelName]: metrics
-              }
+              comparison: { [data.modelName]: metrics }
             };
             setFetchedResults(results);
           } catch (e) {
-            console.error("Error parsing metrics", e);
+            console.error("Error parsing history", e);
           }
+          setLoading(false);
         })
-        .finally(() => setLoading(false));
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
     }
   }, [id]);
 
-  const trainingResults = fetchedResults || workflowState.trainingResults || location.state?.trainingResults;
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const trainingResults = fetchedResults || workflowState.trainingResults || {};
+  const bestModel = trainingResults.bestModel;
 
-<<<<<<< HEAD
-  const isRegression = workflowState.featureSelectionResult?.mode?.toLowerCase() === 'regression' ||
-    workflowState.recommendations?.[0]?.task?.toLowerCase() === 'regression' ||
-    (trainingResults?.comparison && trainingResults?.bestModel && !!trainingResults.comparison[trainingResults.bestModel]?.mse) || (fetchedResults && !!fetchedResults.comparison[fetchedResults.bestModel]?.mse);
-
-  const [activeTab, setActiveTab] = useState<'confusion' | 'roc' | 'importance' | 'learning' | 'regression' | 'residuals'>(
-=======
-  // FIX: Determine task type from actual results if available, to avoid mixing with current workflow state
+  const metrics = (trainingResults.comparison && bestModel) ? trainingResults.comparison[bestModel] : {};
   const isRegression = fetchedResults
-    ? (fetchedResults.type?.toLowerCase() === 'regression' || !!fetchedResults.comparison[fetchedResults.bestModel]?.mse)
-    : (workflowState.featureSelectionResult?.mode?.toLowerCase() === 'regression' ||
-      workflowState.recommendations?.[0]?.task?.toLowerCase() === 'regression' ||
-      (trainingResults?.comparison && trainingResults?.bestModel && !!trainingResults.comparison[trainingResults.bestModel]?.mse));
+    ? (!!metrics.mse || !!metrics.r2)
+    : (workflowState.featureSelectionResult?.mode?.toLowerCase() === 'regression' || !!metrics.mse);
 
-  const [activeTab, setActiveTab] = useState<'confusion' | 'importance' | 'learning' | 'regression' | 'residuals'>(
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
-    'confusion'
-  );
+  const [activeTab, setActiveTab] = useState<'confusion' | 'importance' | 'learning' | 'regression' | 'residuals'>('confusion');
 
   useEffect(() => {
     if (isRegression) {
       setActiveTab('regression');
-<<<<<<< HEAD
-=======
-    } else {
-      setActiveTab('confusion');
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     }
   }, [isRegression]);
 
-  useEffect(() => {
-    const theme = document.documentElement.classList.contains('dark');
-    setIsDarkMode(theme);
+  const classMetrics = metrics.class_metrics || [];
+  const confusionMatrixData = metrics.confusion_matrix_data || []; // Assuming pre-formatted or empty
 
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    });
+  setActiveTab('regression');
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  if (!workflowState.datasetId || !trainingResults || !trainingResults.comparison) {
-    return (
-      <div className="flex flex-col items-center justify-center p-20 h-96 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
-        {loading ? (
-          <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-500 dark:text-slate-400">Chargement des données...</p>
-          </div>
-        ) : (
-          <>
-            <TrendingUp size={48} className="text-gray-300 dark:text-slate-600 mb-4" />
-            <h3 className="text-xl font-medium text-gray-700 dark:text-slate-300">Visualisations non disponibles</h3>
-            <p className="text-gray-500 dark:text-slate-400 mt-2 text-center max-w-sm">
-              L'accès aux graphiques nécessite un modèle préalablement entraîné.
-            </p>
-            <button
-              onClick={() => navigate('/training')}
-              className="mt-6 btn-primary"
-            >
-              Lancer l'entraînement
-            </button>
-          </>
-        )}
-      </div>
-    );
-  }
-
-  const { bestModel, comparison } = trainingResults;
-  const metrics = comparison[bestModel] || {};
-
-  // Enhanced Confusion Matrix Data with calculations
-  const confusionMatrixData = metrics.confusion_matrix ? [
-    { predicted: 'Négatif', actual: 'Négatif', value: metrics.confusion_matrix?.[0]?.[0] || 0, color: '#10B981', type: 'TN' },
-    { predicted: 'Positif', actual: 'Négatif', value: metrics.confusion_matrix?.[0]?.[1] || 0, color: '#EF4444', type: 'FP' },
-    { predicted: 'Négatif', actual: 'Positif', value: metrics.confusion_matrix?.[1]?.[0] || 0, color: '#EF4444', type: 'FN' },
-    { predicted: 'Positif', actual: 'Positif', value: metrics.confusion_matrix?.[1]?.[1] || 0, color: '#10B981', type: 'TP' },
-  ] : [];
-
-  // Calculate per-class metrics from confusion matrix
-  const calculateClassMetrics = () => {
-    if (!metrics.confusion_matrix || metrics.confusion_matrix.length === 0) return [];
-
-    const matrix = metrics.confusion_matrix;
-    const numClasses = matrix.length;
-    const classMetrics = [];
-
-    for (let i = 0; i < numClasses; i++) {
-      const truePositives = matrix[i][i];
-      const falsePositives = matrix.reduce((sum: number, row: number[], idx: number) =>
-        idx !== i ? sum + (row[i] || 0) : sum, 0
-      );
-      const falseNegatives = matrix[i].reduce((sum: number, val: number, idx: number) =>
-        idx !== i ? sum + val : sum, 0
-      );
-
-      const precision = truePositives / (truePositives + falsePositives) || 0;
-      const recall = truePositives / (truePositives + falseNegatives) || 0;
-      const f1Score = 2 * (precision * recall) / (precision + recall) || 0;
-
-      classMetrics.push({
-        className: `Classe ${i}`,
-        precision: (precision * 100).toFixed(1),
-        recall: (recall * 100).toFixed(1),
-        f1Score: (f1Score * 100).toFixed(1),
-      });
-    }
-
-    return classMetrics;
-  };
-
-  const classMetrics = calculateClassMetrics();
-
-<<<<<<< HEAD
-  const rocCurveData = metrics.roc_curve || [];
-=======
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 
   // Enhanced regression data with residuals
   const regressionData = metrics.predictions?.map((p: number, i: number) => ({
@@ -261,10 +154,6 @@ export function Visualization() {
     { id: 'confusion', label: 'Matrice de confusion', icon: Target, hidden: isRegression || !metrics.confusion_matrix },
     { id: 'regression', label: 'Prédictions vs Réel', icon: TrendingUp, hidden: !isRegression },
     { id: 'residuals', label: 'Analyse des résidus', icon: Activity, hidden: !isRegression },
-<<<<<<< HEAD
-    { id: 'roc', label: 'Courbe ROC', icon: Activity, hidden: isRegression || !metrics.roc_curve },
-=======
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     { id: 'importance', label: 'Importance features', icon: Layers, hidden: !metrics.feature_importance },
     { id: 'learning', label: 'Apprentissage', icon: BarChart3, hidden: !metrics.learning_curve },
   ].filter(t => !t.hidden);
@@ -535,34 +424,6 @@ export function Visualization() {
           </div>
         )}
 
-<<<<<<< HEAD
-        {/* ROC Curve */}
-        {activeTab === 'roc' && rocCurveData.length > 0 && (
-          <div className="animation-slide-up">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Courbe ROC</h3>
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={rocCurveData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#E2E8F0'} />
-                  <XAxis dataKey="fpr" stroke={isDarkMode ? '#94A3B8' : '#64748B'} />
-                  <YAxis stroke={isDarkMode ? '#94A3B8' : '#64748B'} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: isDarkMode ? '#1E293B' : '#fff',
-                      border: `1px solid ${isDarkMode ? '#334155' : '#E2E8F0'}`,
-                      borderRadius: '12px',
-                      color: isDarkMode ? '#F8FAFC' : '#1E293B'
-                    }}
-                  />
-                  <Line type="monotone" dataKey="tpr" stroke="#3B82F6" strokeWidth={4} dot={false} />
-                  <Line type="monotone" dataKey="fpr" stroke="#cbd5e1" strokeDasharray="5 5" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-=======
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 
         {/* Feature Importance */}
         {activeTab === 'importance' && featureImportanceData.length > 0 && (

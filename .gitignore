@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-target/
-*.class
-*.log
-.idea/
-.vscode/
-*.iml
-.settings/
-.project
-.classpath
-=======
 # OS
 .DS_Store
 
@@ -52,4 +41,3 @@ firebase-service-account.json
 
 # Logs
 *.log
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4

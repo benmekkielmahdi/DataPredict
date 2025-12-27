@@ -2,31 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, TrendingUp, Clock, Database, Filter, Search, Download, Trash2, Eye, GitCompare } from 'lucide-react';
 import { toast } from 'sonner';
-<<<<<<< HEAD
-=======
-import { useWorkflow } from '../context/WorkflowContext';
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
-
-interface TrainingRecord {
-    id: string;
-    date: string;
-    datasetName: string;
-    modelName: string;
-    accuracy: number;
-    precision: number;
-    recall: number;
-    f1: number;
-    trainingTime: number;
-    status: 'success' | 'failed';
-    description?: string;
-}
-
-export function History() {
-    const navigate = useNavigate();
-<<<<<<< HEAD
-=======
     const { updateState } = useWorkflow();
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     const [searchTerm, setSearchTerm] = useState('');
     const [filterModel, setFilterModel] = useState<string>('all');
     const [sortBy, setSortBy] = useState<'date' | 'accuracy'>('date');
@@ -273,11 +249,7 @@ export function History() {
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 -slate-300">Accuracy</th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 -slate-300">F1-Score</th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 -slate-300">Temps</th>
-<<<<<<< HEAD
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 -slate-300">Description</th>
-=======
                                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700 -slate-300">Actions</th>
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#E2E8F0]">
@@ -336,8 +308,6 @@ export function History() {
                                     <td className="px-6 py-4 text-sm text-gray-500 italic max-w-xs truncate" title={record.description}>
                                         {record.description || "Aucune description"}
                                     </td>
-<<<<<<< HEAD
-=======
                                     <td className="px-6 py-4 text-center">
                                         <button
                                             onClick={(e) => {
@@ -350,7 +320,6 @@ export function History() {
                                             <Eye size={18} />
                                         </button>
                                     </td>
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
                                 </tr>
                             ))}
                         </tbody>

@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-import { BarChart3, TrendingUp, Award, Target, Zap, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useWorkflow } from '../context/WorkflowContext';
-=======
 import { BarChart3, TrendingUp, Award, Target, Zap, AlertCircle, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkflow } from '../context/WorkflowContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Label } from 'recharts';
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 
 // Helper to safely format numbers
 const formatMetric = (val: any) => {
@@ -41,13 +35,6 @@ export function Results() {
   const { bestModel, comparison } = trainingResults;
   const bestMetrics = comparison[bestModel] || {};
 
-<<<<<<< HEAD
-  // Identify all valid numerical metrics
-  const metricKeys = Object.keys(bestMetrics).filter(k =>
-    typeof bestMetrics[k] === 'number' && k !== 'trainingTime'
-  );
-
-=======
   // Determine if task is regression
   const isRegression = bestMetrics['mse'] !== undefined || bestMetrics['r2'] !== undefined;
 
@@ -61,7 +48,6 @@ export function Results() {
 
 
 
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
   const getMetricStyles = (key: string) => {
     const styles: Record<string, { label: string, gradient: string, icon: any }> = {
       accuracy: { label: 'Accuracy', gradient: 'from-blue-500 to-cyan-500', icon: Award },
@@ -71,28 +57,7 @@ export function Results() {
       r2: { label: 'R² Score', gradient: 'from-indigo-500 to-purple-500', icon: Award },
       mse: { label: 'MSE', gradient: 'from-red-500 to-rose-500', icon: Target },
       mae: { label: 'MAE', gradient: 'from-amber-500 to-orange-500', icon: Zap },
-<<<<<<< HEAD
-=======
-      rmse: { label: 'RMSE', gradient: 'from-teal-500 to-emerald-500', icon: Activity },
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
-    };
-    return styles[key.toLowerCase()] || { label: key.toUpperCase(), gradient: 'from-slate-500 to-gray-500', icon: BarChart3 };
-  };
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto animation-fade-in">
-      {/* Header Section */}
-      <div className="mb-8 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm">
-        <h1 className="page-title">Résultats et métriques</h1>
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-gray-500 dark:text-slate-400 font-medium">Meilleur modèle :</span>
-          <span className="font-bold text-blue-600 dark:text-blue-400 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-full text-sm">
-            {bestModel}
-          </span>
-<<<<<<< HEAD
-=======
-
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
         </div>
       </div>
 
@@ -126,11 +91,9 @@ export function Results() {
         })}
       </div>
 
-<<<<<<< HEAD
-=======
 
 
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
+
       {/* Comparison Table */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-100 dark:border-slate-700 shadow-sm mb-8 overflow-hidden">
         <div className="flex items-center justify-between mb-6">

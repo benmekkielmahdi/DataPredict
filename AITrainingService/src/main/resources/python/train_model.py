@@ -179,18 +179,12 @@ def train_model(dataset_path, algorithm_name, target_column, task_type, paramete
     training_time = end_time - start_time
     
     # Metrics
-<<<<<<< HEAD
-    metrics = {}
-    
-    if task_type.lower() == 'classification':
-=======
     # Metrics
     metrics = {}
     
     if task_type.lower() == 'classification':
         from sklearn.metrics import roc_curve, roc_auc_score
         
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
         rec = recall_score(y_test, y_pred, average='weighted', zero_division=0)
@@ -205,8 +199,6 @@ def train_model(dataset_path, algorithm_name, target_column, task_type, paramete
             "confusion_matrix": cm,
             "trainingTime": round(training_time, 2)
         }
-<<<<<<< HEAD
-=======
 
         # ROC Curve Logic (Binary Classification primarily, or macro-average for multi-class if adapted)
         # For simplicity and robustness, we attempt ROC for binary/multiclass if predict_proba is available.
@@ -234,7 +226,6 @@ def train_model(dataset_path, algorithm_name, target_column, task_type, paramete
                 print(f"DEBUG: ROC calculation failed: {e}", file=sys.stderr)
                 pass
 
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
     else:
         mse = mean_squared_error(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
@@ -246,10 +237,6 @@ def train_model(dataset_path, algorithm_name, target_column, task_type, paramete
             "mae": round(mae, 4),
             "rmse": round(rmse, 4),
             "r2": round(r2, 4),
-<<<<<<< HEAD
-            "accuracy": round(max(0, r2), 4), # Fallback for frontend
-=======
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
             "trainingTime": round(training_time, 2)
         }
 

@@ -115,9 +115,6 @@ Ce projet est sous licence **MIT**.
 
 ---
 
-<<<<<<< HEAD
-## Démonstration
-=======
 ## Démonstrations
 
 ## Web App Demo 1 (Classification)
@@ -155,7 +152,4 @@ https://github.com/user-attachments/assets/d2dd1f0f-b85a-4b9f-a66c-372fe94bee4c
 
 https://github.com/user-attachments/assets/d9a256b3-46c5-4350-ac19-e9024852f2ea
 
-
-
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
 

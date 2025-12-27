@@ -88,8 +88,6 @@ export function Training() {
         return;
       }
 
-<<<<<<< HEAD
-=======
       // CHECK: If training results already exist in state, do not re-train.
       if (state.trainingResults && state.trainingResults.comparison) {
         console.log("Training results found in state, skipping re-training.");
@@ -122,7 +120,6 @@ export function Training() {
         return;
       }
 
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
       setError(null);
       setProgress(0);
       setIsComplete(false);

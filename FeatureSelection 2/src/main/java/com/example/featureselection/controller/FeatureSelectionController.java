@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package com.example.featureselection.controller;
 
 import com.example.featureselection.model.SelectionResult;
@@ -34,40 +33,3 @@ public class FeatureSelectionController {
         return ResponseEntity.ok(result);
     }
 }
-=======
-package com.example.featureselection.controller;
-
-import com.example.featureselection.model.SelectionResult;
-import com.example.featureselection.service.FeatureSelectionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-@RestController
-@RequestMapping("/api/feature-selection")
-public class FeatureSelectionController {
-
-    private static final Logger log = LoggerFactory.getLogger(FeatureSelectionController.class);
-    private final FeatureSelectionService featureSelectionService;
-
-    public FeatureSelectionController(FeatureSelectionService featureSelectionService) {
-        this.featureSelectionService = featureSelectionService;
-    }
-
-    @PostMapping(value = "/analyze", consumes = "multipart/form-data")
-    public ResponseEntity<SelectionResult> analyze(
-            @RequestPart("file") MultipartFile file,
-            @RequestParam("targetFeature") String targetFeature,
-            @RequestParam("idUser") String idUser,
-            @RequestParam(value = "skipTextVectorization", defaultValue = "false") boolean skipTextVectorization) {
-
-        log.info("Received analysis request: targetFeature={}, idUser={}, fileName={}, fileSize={}",
-                targetFeature, idUser, file.getOriginalFilename(), file.getSize());
-
-        SelectionResult result = featureSelectionService.analyze(file, targetFeature, idUser, skipTextVectorization);
-        return ResponseEntity.ok(result);
-    }
-}
->>>>>>> f2ca84ca05045926dc254d3581d23412f59c8cb4
