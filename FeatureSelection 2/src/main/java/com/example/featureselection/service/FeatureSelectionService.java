@@ -120,30 +120,47 @@ public class FeatureSelectionService {
         file.transferTo(tempInput);
         File tempOutput = File.createTempFile("processed", ".csv");
 
-        ProcessBuilder pb = new ProcessBuilder("python", "text_tokenizer.py",
+        // Check if script exists
+        File scriptFile = new File("text_tokenizer.py");
+        if (!scriptFile.exists()) {
+            throw new RuntimeException("Python script not found at: " + scriptFile.getAbsolutePath());
+        }
+
+        // Use "python3" by default, fallback to "python" if needed, or configurable
+        String pythonCmd = "python";
+        
+        ProcessBuilder pb = new ProcessBuilder(pythonCmd, scriptFile.getAbsolutePath(),
                 tempInput.getAbsolutePath(), tempOutput.getAbsolutePath());
-        pb.redirectErrorStream(true);
+        
+        // Don'tredirect error stream so we can capture it separately if we want, 
+        // OR better: redirect both to a common log but also capture for exception
+        pb.redirectErrorStream(true); 
+
         Process proc = pb.start();
 
+        StringBuilder processOutput = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 log.info("[Python] {}", line);
+                processOutput.append(line).append(System.lineSeparator());
             }
         }
+        
         try {
             boolean finished = proc.waitFor(120, TimeUnit.SECONDS);
             if (!finished) {
                 proc.destroyForcibly();
-                throw new RuntimeException("Python tokenizer timed out");
+                throw new RuntimeException("Python tokenizer timed out. Output:\n" + processOutput);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Python tokenizer interrupted", e);
         }
+        
         int exit = proc.exitValue();
         if (exit != 0) {
-            throw new RuntimeException("Python tokenizer failed with exit code " + exit);
+            throw new RuntimeException("Python tokenizer failed with exit code " + exit + ". Output:\n" + processOutput);
         }
 
         return tempOutput;
