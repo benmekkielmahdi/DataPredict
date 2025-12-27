@@ -21,9 +21,10 @@ pipeline {
                         # 1. Vérifier si l'environnement virtuel existe déjà
                         if [ ! -d "venv" ]; then
                             echo "Creating venv..."
+                            echo "Creating venv..."
                             python3 -m venv venv
-                            ./venv/bin/pip install --upgrade pip
-                            ./venv/bin/pip install --no-cache-dir pandas nltk
+                            ./venv/bin/pip install --upgrade pip setuptools wheel
+                            ./venv/bin/pip install --no-cache-dir --only-binary :all: pandas nltk
                         else
                             echo "venv already exists. Skipping creation."
                         fi
