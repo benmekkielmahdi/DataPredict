@@ -170,6 +170,11 @@ public class FeatureSelectionService {
             boolean skipTextVectorization) {
         log.info("Starting feature selection analysis for target: {} with auto-detected mode (userId: {})",
                 targetFeature, userId);
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("The uploaded file is empty.");
+        }
+
         MathEx.setSeed(42);
 
         try {
