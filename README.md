@@ -117,13 +117,19 @@ Ce projet est sous licence **MIT**.
 
 ## Démonstrations
 
-## Demo 1App Mobile
+## Web App Demo 1
+
+
+https://github.com/user-attachments/assets/82864754-0f4f-4834-a87d-c8495cb19a43
+
+
+## Mobile App Demo 1
 
 https://github.com/user-attachments/assets/d2dd1f0f-b85a-4b9f-a66c-372fe94bee4c
 
 
 
-## Demo 2 App Mobile
+## Mobile App Demo 2
 
 https://github.com/user-attachments/assets/d9a256b3-46c5-4350-ac19-e9024852f2ea
 
