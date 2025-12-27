@@ -17,23 +17,29 @@ pipeline {
             steps {
                 script {
                     echo 'Configuring global Python environment and NLTK data...'
-                    sh '''
-                        # 1. Créer l'environnement virtuel pour le workspace
-                        python3 -m venv venv
+                        # 1. Vérifier si l'environnement virtuel existe déjà
+                        if [ ! -d "venv" ]; then
+                            echo "Creating venv..."
+                            python3 -m venv venv
+                            ./venv/bin/pip install --no-cache-dir pandas nltk
+                        else
+                            echo "venv already exists. Skipping creation."
+                        fi
                         
-                        # 2. Installer les dépendances pour les services Java
-                        ./venv/bin/pip install --no-cache-dir pandas nltk
+                        # 2. Vérifier si NLTK data existe déjà
+                        if [ ! -d "nltk_data" ]; then
+                            echo "Downloading NLTK data..."
+                            mkdir -p nltk_data
+                            ./venv/bin/python -m nltk.downloader -d ./nltk_data punkt
+                        else
+                            echo "nltk_data already exists. Skipping download."
+                        fi
                         
-                        # 3. FIX NLTK : Télécharger les modèles dans un dossier local (accessible par Jenkins)
-                        mkdir -p nltk_data
-                        ./venv/bin/python -m nltk.downloader -d ./nltk_data punkt
-                        
-                        # 4. Créer un dossier bin pour "tromper" le PATH
+                        # 3. Créer un dossier bin pour "tromper" le PATH (toujours recréer le lien pour être ŝur)
                         mkdir -p bin
                         ln -sf $(pwd)/venv/bin/python ./bin/python
                         
                         echo "Python environment and NLTK data ready."
-                    '''
                 }
             }
         }
@@ -60,9 +66,16 @@ pipeline {
                                 sh 'chmod +x mvnw || true'
                                 
                                 if (fileExists('mvnw')) {
-                                    sh './mvnw clean package -DskipTests=false'
+                                    sh '''
+                                        chmod +x mvnw
+                                        . ../venv/bin/activate
+                                        ./mvnw clean package -DskipTests=false
+                                    '''
                                 } else {
-                                    sh 'mvn clean package -DskipTests=false'
+                                    sh '''
+                                        . ../venv/bin/activate
+                                        mvn clean package -DskipTests=false
+                                    '''
                                 }
                             }
                         }
@@ -119,7 +132,11 @@ pipeline {
         always {
             // Publication des résultats de tests (obligatoire de nommer testResults)
             junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
-            cleanWs()
+            // Nettoyer le workspace mais garder l'environnement Python pour le cache
+            cleanWs(patterns: [
+                [pattern: 'venv/**', type: 'EXCLUDE'],
+                [pattern: 'nltk_data/**', type: 'EXCLUDE']
+            ])
         }
         failure {
             echo 'Le pipeline a échoué. Vérifiez les erreurs de tests ci-dessus.'
