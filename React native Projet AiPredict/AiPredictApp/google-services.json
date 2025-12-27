@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "572843796498",
+    "firebase_url": "https://anas-khaiy-default-rtdb.firebaseio.com",
+    "project_id": "anas-khaiy",
+    "storage_bucket": "anas-khaiy.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:572843796498:android:e26d90c5c825f9abd2d0cb",
+        "android_client_info": {
+          "package_name": "com.groupe.ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXxwQqkUypvqI--t5tPkBPqZrlSB73iMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
