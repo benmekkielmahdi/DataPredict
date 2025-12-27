@@ -117,19 +117,31 @@ Ce projet est sous licence **MIT**.
 
 ## Démonstrations
 
-## Web App Demo 1
-
-
-https://github.com/user-attachments/assets/82864754-0f4f-4834-a87d-c8495cb19a43
-
-## Web App Demo 2
-
-
-https://github.com/user-attachments/assets/6f7a8b2a-c1ff-416e-b565-16bc324d0e18
+## Web App Demo 1 (Classification)
 
 
 
-## Web App Demo 3
+https://github.com/user-attachments/assets/0a06d9b8-a94c-41b2-94cf-a38687d48f61
+
+
+
+## Web App Demo 2 (Régression)
+
+
+
+
+
+https://github.com/user-attachments/assets/53922492-b29c-4ab1-8638-f320b16bc37b
+
+
+
+## Web App Demo 3 (Classification)
+
+
+https://github.com/user-attachments/assets/f16fbb84-120d-4fe1-bcc4-86af9c7a0ddc
+
+
+
 ## Mobile App Demo 1
 
 https://github.com/user-attachments/assets/d2dd1f0f-b85a-4b9f-a66c-372fe94bee4c
