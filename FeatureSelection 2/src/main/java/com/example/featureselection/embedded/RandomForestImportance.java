@@ -16,12 +16,12 @@ import java.util.Map;
 public class RandomForestImportance {
 
     public Map<String, Double> calculate(double[][] x, int[] y, String[] featureNames) {
-        
+
         return calculateInternal(x, y, featureNames, true);
     }
 
     public Map<String, Double> calculate(double[][] x, double[] y, String[] featureNames) {
-        
+
         return calculateInternal(x, y, featureNames, false);
     }
 
@@ -29,7 +29,6 @@ public class RandomForestImportance {
             boolean isClassification) {
         Map<String, Double> scores = new HashMap<>();
 
-        
         StructField[] fields = new StructField[featureNames.length + 1];
         for (int i = 0; i < featureNames.length; i++) {
             fields[i] = new StructField(featureNames[i], DataTypes.DoubleType);
@@ -43,8 +42,15 @@ public class RandomForestImportance {
 
         StructType schema = new StructType(fields);
 
-        
         int rows = x.length;
+        // If we have fewer than 2 rows, we cannot train a forest or calculate potential
+        // splits.
+        // Return clear (zero) importance to avoid library errors (like "Invalid maximum
+        // leaves: 1").
+        if (rows < 2) {
+            return scores;
+        }
+
         List<Tuple> data = new java.util.ArrayList<>();
 
         int[] yInt = isClassification ? (int[]) y : null;
@@ -65,15 +71,17 @@ public class RandomForestImportance {
 
         DataFrame df = DataFrame.of(data, schema);
 
-        
         java.util.Properties props = new java.util.Properties();
         props.setProperty("smile.random.forest.trees", "100");
         int mtry = (int) Math.sqrt(featureNames.length);
         if (mtry < 1)
             mtry = 1;
         props.setProperty("smile.random.forest.mtry", String.valueOf(mtry));
-        
-        props.setProperty("smile.random.forest.max.nodes", String.valueOf(rows));
+
+        // Ensure max.nodes is at least 2 even for small datasets
+        int maxNodes = Math.max(rows, 2);
+        System.out.println("RandomForestImportance: rows=" + rows + ", maxNodes=" + maxNodes);
+        props.setProperty("smile.random.forest.max.nodes", String.valueOf(maxNodes));
         props.setProperty("smile.random.forest.node.size", "1");
 
         double[] importance;
@@ -85,7 +93,6 @@ public class RandomForestImportance {
             importance = model.importance();
         }
 
-        
         for (int i = 0; i < featureNames.length; i++) {
             double imp = 0.0;
             if (i < importance.length) {

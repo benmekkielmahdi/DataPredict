@@ -211,12 +211,14 @@ class RecommendationEngine:
         
         if "Logistic" in model_name or "Linear" in model_name or "SVM" in model_name or "SVR" in model_name:
             # Prefer these for small to medium datasets
-            if n_rows < 2000: size_score = 0.9
+            if n_rows < 50: size_score = 1.0 # Strong preference for very small datasets
+            elif n_rows < 2000: size_score = 0.9
             elif n_rows < 20000: size_score = 0.7
             else: size_score = 0.5
         elif "RandomForest" in model_name or "XGB" in model_name:
             # Prefer these for larger datasets where their overhead is justified
-            if n_rows < 1000: size_score = 0.6
+            if n_rows < 50: size_score = 0.2 # Strong penalty for very small datasets to avoid overfitting
+            elif n_rows < 1000: size_score = 0.6
             elif n_rows < 5000: size_score = 0.8
             else: size_score = 0.95
         

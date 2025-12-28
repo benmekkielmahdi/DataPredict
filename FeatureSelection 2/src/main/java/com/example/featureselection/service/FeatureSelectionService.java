@@ -128,13 +128,13 @@ public class FeatureSelectionService {
 
         // Use "python3" by default, fallback to "python" if needed, or configurable
         String pythonCmd = "python";
-        
+
         ProcessBuilder pb = new ProcessBuilder(pythonCmd, scriptFile.getAbsolutePath(),
                 tempInput.getAbsolutePath(), tempOutput.getAbsolutePath());
-        
-        // Don'tredirect error stream so we can capture it separately if we want, 
+
+        // Don'tredirect error stream so we can capture it separately if we want,
         // OR better: redirect both to a common log but also capture for exception
-        pb.redirectErrorStream(true); 
+        pb.redirectErrorStream(true);
 
         Process proc = pb.start();
 
@@ -146,7 +146,7 @@ public class FeatureSelectionService {
                 processOutput.append(line).append(System.lineSeparator());
             }
         }
-        
+
         try {
             boolean finished = proc.waitFor(120, TimeUnit.SECONDS);
             if (!finished) {
@@ -157,10 +157,11 @@ public class FeatureSelectionService {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Python tokenizer interrupted", e);
         }
-        
+
         int exit = proc.exitValue();
         if (exit != 0) {
-            throw new RuntimeException("Python tokenizer failed with exit code " + exit + ". Output:\n" + processOutput);
+            throw new RuntimeException(
+                    "Python tokenizer failed with exit code " + exit + ". Output:\n" + processOutput);
         }
 
         return tempOutput;
@@ -307,7 +308,13 @@ public class FeatureSelectionService {
                 pearsonScores = normalize(pearsonFilter.calculate(x, yInt, featureNames));
                 anovaScores = normalize(anovaFilter.calculate(x, yInt, featureNames));
                 try {
-                    rfScores = normalize(rfImportance.calculate(x, yInt, featureNames));
+                    if (sampleCount > 50) {
+                        rfScores = normalize(rfImportance.calculate(x, yInt, featureNames));
+                    } else {
+                        log.info("Skipping Random Forest importance: sampleCount {} too small (threshold 50)",
+                                sampleCount);
+                        rfScores = new HashMap<>();
+                    }
                 } catch (Exception e) {
                     log.warn("Random Forest importance calculation failed (classification): {}", e.getMessage());
                     rfScores = new HashMap<>();
@@ -320,7 +327,13 @@ public class FeatureSelectionService {
                 anovaScores = normalize(anovaFilter.calculate(x, yDouble, featureNames));
 
                 try {
-                    rfScores = normalize(rfImportance.calculate(x, yDouble, featureNames));
+                    if (sampleCount > 50) {
+                        rfScores = normalize(rfImportance.calculate(x, yDouble, featureNames));
+                    } else {
+                        log.info("Skipping Random Forest importance: sampleCount {} too small (threshold 50)",
+                                sampleCount);
+                        rfScores = new HashMap<>();
+                    }
                 } catch (Exception e) {
                     log.warn("Random Forest importance calculation failed (regression): {}", e.getMessage());
                     rfScores = new HashMap<>();

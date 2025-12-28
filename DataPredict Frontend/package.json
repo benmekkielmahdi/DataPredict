@@ -1,6 +1,6 @@
 {
       "type": "module",
-      "name": "datapredict-ux-ui-design-system",
+      "name": "datapredict",
       "version": "0.1.0",
       "private": true,
       "dependencies": {

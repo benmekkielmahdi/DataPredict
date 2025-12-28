@@ -1,4 +1,4 @@
-import { BarChart3, TrendingUp, Award, Target, Zap, AlertCircle, Activity } from 'lucide-react';
+import { BarChart3, TrendingUp, Award, Target, Zap, AlertCircle, Activity, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkflow } from '../context/WorkflowContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Label } from 'recharts';
@@ -57,7 +57,32 @@ export function Results() {
       r2: { label: 'R² Score', gradient: 'from-indigo-500 to-purple-500', icon: Award },
       mse: { label: 'MSE', gradient: 'from-red-500 to-rose-500', icon: Target },
       mae: { label: 'MAE', gradient: 'from-amber-500 to-orange-500', icon: Zap },
+    };
+    return styles[key] || { label: key, gradient: 'from-gray-500 to-slate-500', icon: Activity };
+  };
 
+  return (
+    <div className="p-6 max-w-7xl mx-auto animation-fade-in text-gray-900">
+      <div className="mb-8">
+        <h1 className="page-title">Performance globale</h1>
+        <p className="text-gray-500 dark:text-slate-400">Analyse détaillée du meilleur modèle sélectionné</p>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm mb-8 transition-all hover:shadow-md">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center border-4 border-blue-100 dark:border-blue-800/50 shadow-inner">
+            <Award className="text-blue-600 dark:text-blue-400" size={64} />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-black uppercase tracking-widest mb-4">
+              <Trophy className="w-3 h-3" />
+              Modèle Recommandé
+            </div>
+            <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-2">{bestModel}</h2>
+            <p className="text-gray-600 dark:text-slate-400 max-w-lg">
+              Ce modèle a été identifié comme le plus performant pour votre dataset selon les métriques de validation croisée.
+            </p>
+          </div>
         </div>
       </div>
 

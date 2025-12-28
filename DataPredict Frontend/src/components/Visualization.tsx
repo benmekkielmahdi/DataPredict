@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useWorkflow } from '../context/WorkflowContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   BarChart,
   Bar,
@@ -30,6 +31,7 @@ import {
 export function Visualization() {
   const navigate = useNavigate();
   const { state: workflowState } = useWorkflow();
+  const { isDarkMode } = useTheme();
   const location = useLocation();
   /* New Logic for Dynamic Backend Connection */
   const { id } = useParams();
@@ -82,9 +84,50 @@ export function Visualization() {
   }, [isRegression]);
 
   const classMetrics = metrics.class_metrics || [];
-  const confusionMatrixData = metrics.confusion_matrix_data || []; // Assuming pre-formatted or empty
+  const rawMatrix = metrics.confusion_matrix;
 
-  setActiveTab('regression');
+  // Process raw confusion matrix if formatted data is missing
+  const confusionMatrixData = metrics.confusion_matrix_data || (() => {
+    if (!rawMatrix || !Array.isArray(rawMatrix)) return [];
+
+    const size = rawMatrix.length;
+    const flattened: any[] = [];
+
+    // Heuristics for binary classification (Size 2x2)
+    // Assuming standard sklearn format: [ [TN, FP], [FN, TP] ]
+    // Index 0: Negative, Index 1: Positive
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        const val = rawMatrix[i][j]; // Row i (True), Col j (Predicted)
+
+        let type = size === 2 ? "" : (i === j ? "Correct" : "Erreur");
+        let color = "#cbd5e1"; // Default Gray
+
+        if (size === 2) {
+          // Binary Logic
+          if (i === 0 && j === 0) { type = "Vrai Négatif"; color = "#64748b"; } // TN
+          else if (i === 0 && j === 1) { type = "Faux Positif"; color = "#ef4444"; } // FP
+          else if (i === 1 && j === 0) { type = "Faux Négatif"; color = "#f97316"; } // FN
+          else if (i === 1 && j === 1) { type = "Vrai Positif"; color = "#22c55e"; } // TP
+        } else {
+          // Multi-class: Diagonal is Green, others Red/Orange scaled by magnitude could be fancy, but simple for now
+          color = i === j ? "#22c55e" : "#ef4444";
+        }
+
+        flattened.push({
+          value: val,
+          predicted: `Classe ${j}`, // Fallback if no labels
+          actual: `Classe ${i}`,
+          type: type,
+          color: color
+        });
+      }
+    }
+    return flattened;
+  })();
+
+  const matrixSize = rawMatrix ? rawMatrix.length : 2;
 
 
   // Enhanced regression data with residuals
@@ -208,8 +251,11 @@ export function Visualization() {
                 <Target className="text-blue-600" />
                 Matrice de confusion détaillée
               </h3>
-              <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
-                {confusionMatrixData.map((cell, idx) => (
+              <div
+                className="grid gap-6 max-w-2xl mx-auto"
+                style={{ gridTemplateColumns: `repeat(${matrixSize}, minmax(0, 1fr))` }}
+              >
+                {confusionMatrixData.map((cell: any, idx: number) => (
                   <div
                     key={idx}
                     className="relative p-10 rounded-2xl border-2 transition-all hover:shadow-lg cursor-pointer"

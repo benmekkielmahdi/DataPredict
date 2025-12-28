@@ -1,13 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, TrendingUp, Clock, Database, Filter, Search, Download, Trash2, Eye, GitCompare } from 'lucide-react';
+import { Calendar, TrendingUp, Clock, Database, Filter, Search, Download, Eye, GitCompare } from 'lucide-react';
 import { toast } from 'sonner';
+import { useWorkflow } from '../context/WorkflowContext';
+
+interface TrainingRecord {
+    id: string;
+    date: string;
+    datasetName: string;
+    modelName: string;
+    accuracy: number;
+    precision: number;
+    recall: number;
+    f1: number;
+    trainingTime: number;
+    status: 'success' | 'failed';
+    description: string;
+}
+
+export function History() {
+    const navigate = useNavigate();
     const { updateState } = useWorkflow();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterModel, setFilterModel] = useState<string>('all');
     const [sortBy, setSortBy] = useState<'date' | 'accuracy'>('date');
     const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
-
     const [trainingHistory, setTrainingHistory] = useState<TrainingRecord[]>([]);
 
     useEffect(() => {

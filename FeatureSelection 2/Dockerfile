@@ -3,6 +3,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
+# Force rebuild 1
 RUN mvn clean package -Dmaven.test.skip=true -U -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.count=3
 
 # Run Stage
