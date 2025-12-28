@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.9-eclipse-temurin-17-jammy'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
         // Définit l'outil SonarScanner
@@ -23,16 +18,13 @@ pipeline {
                 script {
                     echo 'Configuring global Python environment and NLTK data...'
                     sh '''
-                        # Pré-requis : Installation des paquets système (car image maven minimale)
-                        apt-get update && apt-get install -y python3 python3-venv python3-pip
-
                         # 1. Vérifier si l'environnement virtuel existe déjà
                         if [ ! -d "venv" ]; then
                             echo "Creating venv..."
                             echo "Creating venv..."
                             python3 -m venv venv
-                            ./venv/bin/pip install --upgrade pip setuptools wheel
-                            ./venv/bin/pip install --no-cache-dir --only-binary :all: pandas nltk
+                            ./venv/bin/pip install --upgrade pip setuptools wheel cython
+                            ./venv/bin/pip install --no-cache-dir --prefer-binary "pandas>=2.2.0" nltk
                         else
                             echo "venv already exists. Skipping creation."
                         fi
@@ -109,7 +101,9 @@ pipeline {
                                     # Venv spécifique au module pour isoler les dépendances de prod
                                     python3 -m venv venv_module
                                     . venv_module/bin/activate
-                                    pip install --upgrade pip
+                                    pip install --upgrade pip setuptools wheel cython
+                                    # Hack: Pre-install compatible pandas/numpy before requirements to guide resolution
+                                    pip install --prefer-binary "pandas>=2.2.0" "numpy>=1.26.0"
                                     pip install -r requirements.txt
                                     pip install pytest pytest-cov
                                     
