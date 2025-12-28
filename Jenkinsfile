@@ -16,33 +16,47 @@ pipeline {
         stage('Setup Python (Workspace)') {
             steps {
                 script {
-                    echo 'Configuring global Python environment and NLTK data...'
+                    echo 'Configuring portable Python 3.10 environment using Micromamba...'
                     sh '''
-                        # 1. Vérifier si l'environnement virtuel existe déjà
-                        if [ ! -d "venv" ]; then
-                            echo "Creating venv..."
-                            echo "Creating venv..."
-                            python3 -m venv venv
-                            ./venv/bin/pip install --upgrade pip setuptools wheel cython
-                            ./venv/bin/pip install --no-cache-dir --prefer-binary "pandas>=2.2.0" nltk
-                        else
-                            echo "venv already exists. Skipping creation."
-                        fi
-                        
-                        # 2. Vérifier si NLTK data existe déjà
-                        if [ ! -d "nltk_data" ]; then
-                            echo "Downloading NLTK data..."
-                            mkdir -p nltk_data
-                            ./venv/bin/python -m nltk.downloader -d ./nltk_data punkt
-                        else
-                            echo "nltk_data already exists. Skipping download."
-                        fi
-                        
-                        # 3. Créer un dossier bin pour "tromper" le PATH (toujours recréer le lien pour être ŝur)
+                        # 0. Clean old environment to avoid conflicts
+                        rm -rf venv bin micromamba nltk_data
                         mkdir -p bin
-                        ln -sf $(pwd)/venv/bin/python ./bin/python
+
+                        # 1. Download Micromamba (Static Binary)
+                        echo "Downloading Micromamba..."
+                        curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj bin/micromamba
                         
-                        echo "Python environment and NLTK data ready."
+                        # 2. Create local environment with Python 3.10
+                        echo "Installing Python 3.10..."
+                        export MAMBA_ROOT_PREFIX=$(pwd)/micromamba
+                        ./bin/micromamba create -y -n py310 python=3.10 -c conda-forge
+
+                        # 3. Create symlinks to use this python easily
+                        ln -sf $(pwd)/micromamba/envs/py310/bin/python3 ./bin/python3
+                        ln -sf $(pwd)/micromamba/envs/py310/bin/python3 ./bin/python
+                        ln -sf $(pwd)/micromamba/envs/py310/bin/pip3 ./bin/pip3
+                        
+                        export PATH=$(pwd)/bin:$PATH
+                        
+                        echo "Python version check:"
+                        python3 --version
+
+                        # 4. Create standard venv using our custom Python 3.10
+                        echo "Creating project venv..."
+                        python3 -m venv venv
+                        
+                        # Activate and install dependencies
+                        . venv/bin/activate
+                        pip install --upgrade pip setuptools wheel
+                        pip install --no-cache-dir pandas nltk
+                        
+                        # NLTK Data
+                        if [ ! -d "nltk_data" ]; then
+                            mkdir -p nltk_data
+                            python -m nltk.downloader -d ./nltk_data punkt
+                        fi
+                        
+                        echo "Python 3.10 environment ready."
                     '''
                 }
             }
@@ -99,7 +113,7 @@ pipeline {
                                 echo "Building Python Project: ${project}"
                                 sh '''
                                     # Venv spécifique au module pour isoler les dépendances de prod
-                                    python3 -m venv venv_module
+                                    ${WORKSPACE}/bin/python3 -m venv venv_module
                                     . venv_module/bin/activate
                                     pip install --upgrade pip setuptools wheel cython
                                     # Hack: Pre-install compatible pandas/numpy before requirements to guide resolution
