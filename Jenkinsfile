@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.9-eclipse-temurin-17-jammy'
+            args '-u root'
+        }
+    }
 
     environment {
         // Définit l'outil SonarScanner
@@ -18,11 +23,14 @@ pipeline {
                 script {
                     echo 'Configuring global Python environment and NLTK data...'
                     sh '''
+                        # Pré-requis : Installation des paquets système (car image maven minimale)
+                        apt-get update && apt-get install -y python3 python3-venv python3-pip
+
                         # 1. Vérifier si l'environnement virtuel existe déjà
                         if [ ! -d "venv" ]; then
                             echo "Creating venv..."
                             echo "Creating venv..."
-                            python3.10 -m venv venv
+                            python3 -m venv venv
                             ./venv/bin/pip install --upgrade pip setuptools wheel
                             ./venv/bin/pip install --no-cache-dir --only-binary :all: pandas nltk
                         else
@@ -99,7 +107,7 @@ pipeline {
                                 echo "Building Python Project: ${project}"
                                 sh '''
                                     # Venv spécifique au module pour isoler les dépendances de prod
-                                    python3.10 -m venv venv_module
+                                    python3 -m venv venv_module
                                     . venv_module/bin/activate
                                     pip install --upgrade pip
                                     pip install -r requirements.txt
