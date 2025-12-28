@@ -14,7 +14,7 @@ COPY src ./src
 RUN mvn clean package -Dmaven.test.skip=true
 
 # Run Stage
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Install Python for Preprocessing scripts
@@ -27,7 +27,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python || true
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY --from=build /app/target/*.jar app.jar
 COPY src/main/resources/scripts ./scripts/
