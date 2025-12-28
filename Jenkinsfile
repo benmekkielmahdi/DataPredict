@@ -22,7 +22,7 @@ pipeline {
                         if [ ! -d "venv" ]; then
                             echo "Creating venv..."
                             echo "Creating venv..."
-                            python3 -m venv venv
+                            python3.10 -m venv venv
                             ./venv/bin/pip install --upgrade pip setuptools wheel
                             ./venv/bin/pip install --no-cache-dir --only-binary :all: pandas nltk
                         else
@@ -99,7 +99,7 @@ pipeline {
                                 echo "Building Python Project: ${project}"
                                 sh '''
                                     # Venv spécifique au module pour isoler les dépendances de prod
-                                    python3 -m venv venv_module
+                                    python3.10 -m venv venv_module
                                     . venv_module/bin/activate
                                     pip install --upgrade pip
                                     pip install -r requirements.txt
