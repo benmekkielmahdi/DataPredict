@@ -166,7 +166,7 @@ pipeline {
                                         -Dsonar.projectName='${projectDir}' \\
                                         -Dsonar.sources=. \\
                                         -Dsonar.java.binaries=target/classes \\
-                                        -Dsonar.working.directory=\$(pwd)/.scannerwork_java \\
+                                        -Dsonar.working.directory=\"\$(pwd)/.scannerwork_java\" \\
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
@@ -193,7 +193,7 @@ pipeline {
                                         -Dsonar.projectName='${projectDir} (Python)' \\
                                         -Dsonar.sources=. \\
                                         -Dsonar.exclusions=**/*.java \\
-                                        -Dsonar.working.directory=\$(pwd)/.scannerwork_python \\
+                                        -Dsonar.working.directory=\"\$(pwd)/.scannerwork_python\" \\
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
