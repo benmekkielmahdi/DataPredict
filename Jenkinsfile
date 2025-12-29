@@ -62,9 +62,12 @@ pipeline {
             }
         }
 
-        stage('Build & Test (Java)') {
+        stage('Parallel Builds') {
             steps {
                 script {
+                    def parallelBuilds = [:]
+                    
+                    // --- JAVA SERVICES ---
                     def javaProjects = [
                         'MicroService Auth', 
                         'api-gateway', 
@@ -72,77 +75,125 @@ pipeline {
                         'Preprocessing_Service', 
                         'FeatureSelection 2'
                     ]
-                    
-                    // On injecte le chemin vers Python et le dossier de données NLTK
-                    withEnv([
-                        "PATH+PYTHON=${WORKSPACE}/bin",
-                        "NLTK_DATA=${WORKSPACE}/nltk_data"
-                    ]) {
-                        javaProjects.each { project ->
+
+                    javaProjects.each { project ->
+                        // Use a closure to capture the variable
+                        parallelBuilds["Build Java: ${project}"] = {
                             dir(project) {
-                                echo "Building Java Project: ${project}"
-                                sh 'chmod +x mvnw || true'
-                                
-                                if (fileExists('mvnw')) {
+                                withEnv([
+                                    "PATH+PYTHON=${WORKSPACE}/bin",
+                                    "NLTK_DATA=${WORKSPACE}/nltk_data"
+                                ]) {
+                                    echo "Building Java Project: ${project}"
+                                    sh 'chmod +x mvnw || true'
+                                    
+                                    if (fileExists('mvnw')) {
+                                        sh '''
+                                            chmod +x mvnw
+                                            . ../venv/bin/activate
+                                            ./mvnw clean package -DskipTests=false
+                                        '''
+                                    } else {
+                                        sh '''
+                                            . ../venv/bin/activate
+                                            mvn clean package -DskipTests=false
+                                        '''
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // --- PYTHON SERVICES ---
+                    def pythonProjects = ['ModelRecommendation', 'Preprocessing_Service']
+                    
+                    pythonProjects.each { project ->
+                        parallelBuilds["Build Python: ${project}"] = {
+                            dir(project) {
+                                if (fileExists('requirements.txt')) {
+                                    echo "Building Python Project: ${project}"
                                     sh '''
-                                        chmod +x mvnw
-                                        . ../venv/bin/activate
-                                        ./mvnw clean package -DskipTests=false
-                                    '''
-                                } else {
-                                    sh '''
-                                        . ../venv/bin/activate
-                                        mvn clean package -DskipTests=false
+                                        # Venv spécifique au module pour isoler les dépendances de prod
+                                        ${WORKSPACE}/bin/python3 -m venv venv_module
+                                        . venv_module/bin/activate
+                                        pip install --upgrade pip setuptools wheel cython
+                                        # Hack: Pre-install compatible pandas/numpy before requirements to guide resolution
+                                        pip install --prefer-binary "pandas>=2.2.0" "numpy>=1.26.0"
+                                        pip install -r requirements.txt
+                                        pip install pytest pytest-cov
+                                        
+                                        if [ -d "tests" ] || ls test_*.py 1> /dev/null 2>&1; then
+                                            python -m pytest --cov=. --cov-report=xml
+                                        else
+                                            echo "No tests found for ${project}"
+                                        fi
                                     '''
                                 }
                             }
                         }
                     }
+
+                    // Run all builds in parallel
+                    parallel parallelBuilds
                 }
             }
         }
 
-        stage('Build & Test (Python)') {
+        stage('Parallel SonarQube Analysis') {
             steps {
                 script {
-                    def pythonProjects = ['ModelRecommendation', 'Preprocessing_Service']
+                    def parallelAnalysis = [:]
                     
-                    pythonProjects.each { project ->
-                        dir(project) {
-                            if (fileExists('requirements.txt')) {
-                                echo "Building Python Project: ${project}"
-                                sh '''
-                                    # Venv spécifique au module pour isoler les dépendances de prod
-                                    ${WORKSPACE}/bin/python3 -m venv venv_module
-                                    . venv_module/bin/activate
-                                    pip install --upgrade pip setuptools wheel cython
-                                    # Hack: Pre-install compatible pandas/numpy before requirements to guide resolution
-                                    pip install --prefer-binary "pandas>=2.2.0" "numpy>=1.26.0"
-                                    pip install -r requirements.txt
-                                    pip install pytest pytest-cov
-                                    
-                                    if [ -d "tests" ] || ls test_*.py 1> /dev/null 2>&1; then
-                                        python -m pytest --cov=. --cov-report=xml
-                                    else
-                                        echo "No tests found for ${project}"
-                                    fi
-                                '''
+                    // --- JAVA ANALYSIS ---
+                    def javaProjects = [
+                        'MicroService Auth': 'DataPredict:Auth',
+                        'api-gateway': 'DataPredict:Gateway',
+                        'AITrainingService': 'DataPredict:AITraining',
+                        'Preprocessing_Service': 'DataPredict:Preprocessing_Java',
+                        'FeatureSelection 2': 'DataPredict:FeatureSelection'
+                    ]
+
+                    javaProjects.each { projectDir, projectKey ->
+                        parallelAnalysis["Sonar Java: ${projectDir}"] = {
+                            dir(projectDir) {
+                                withSonarQubeEnv('DOCKER_SONAR') {
+                                    // Utilisation de tool 'SonarScanner' défini globalement en tant que SCANNER_HOME
+                                    sh """
+                                        ${SCANNER_HOME}/bin/sonar-scanner \
+                                        -Dsonar.projectKey='${projectKey}' \
+                                        -Dsonar.projectName='${projectDir}' \
+                                        -Dsonar.sources=. \
+                                        -Dsonar.host.url=http://sonarqube:9000
+                                    """
+                                }
                             }
                         }
                     }
-                }
-            }
-        }
 
-        stage('Static Analysis (SonarQube)') {
-            steps {
-                withSonarQubeEnv('DOCKER_SONAR') {
-                    sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=DataPredict \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://sonarqube:9000
-                    """
+                    // --- PYTHON ANALYSIS ---
+                    def pythonProjects = [
+                        'ModelRecommendation': 'DataPredict:ModelRecommendation',
+                        'Preprocessing_Service': 'DataPredict:Preprocessing_Python'
+                    ]
+
+                    pythonProjects.each { projectDir, projectKey ->
+                        parallelAnalysis["Sonar Python: ${projectDir}"] = {
+                            dir(projectDir) {
+                                withSonarQubeEnv('DOCKER_SONAR') {
+                                    sh """
+                                        ${SCANNER_HOME}/bin/sonar-scanner \
+                                        -Dsonar.projectKey='${projectKey}' \
+                                        -Dsonar.projectName='${projectDir} (Python)' \
+                                        -Dsonar.sources=. \
+                                        -Dsonar.host.url=http://sonarqube:9000
+                                    """
+                                }
+                            }
+                        }
+                    }
+
+                    // Run all analyses in parallel
+                    parallel parallelAnalysis
                 }
             }
         }
