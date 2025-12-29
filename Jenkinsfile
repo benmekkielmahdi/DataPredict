@@ -146,27 +146,27 @@ pipeline {
                     
                     // --- JAVA ANALYSIS ---
                     def javaProjects = [
-                        'MicroService Auth': 'DataPredict:Auth',
-                        'api-gateway': 'DataPredict:Gateway',
-                        'AITrainingService': 'DataPredict:AITraining',
-                        'Preprocessing_Service': 'DataPredict:Preprocessing_Java',
-                        'FeatureSelection 2': 'DataPredict:FeatureSelection'
+                        'MicroService Auth': 'DataPredict_Auth',
+                        'api-gateway': 'DataPredict_Gateway',
+                        'AITrainingService': 'DataPredict_AITraining',
+                        'Preprocessing_Service': 'DataPredict_Preprocessing_Java',
+                        'FeatureSelection 2': 'DataPredict_FeatureSelection'
                     ]
 
                     javaProjects.each { projectDir, projectKey ->
                         parallelAnalysis["Sonar Java: ${projectDir}"] = {
                             dir(projectDir) {
                                 withSonarQubeEnv('DOCKER_SONAR') {
-                                    // Utilisation de tool 'SonarScanner' défini globalement en tant que SCANNER_HOME
-                                    // Make sure target/classes exists or is created by the build stage
-                                    // .scannerwork_java avoids lock collision with Python scan in same dir
+                                    // Robust approach: create dir and use absolute path
                                     sh """
-                                        ${SCANNER_HOME}/bin/sonar-scanner \
-                                        -Dsonar.projectKey='${projectKey}' \
-                                        -Dsonar.projectName='${projectDir}' \
-                                        -Dsonar.sources=. \
-                                        -Dsonar.java.binaries=target/classes \
-                                        -Dsonar.working.directory=.scannerwork_java \
+                                        echo "Starting Java Analysis for ${projectDir}"
+                                        mkdir -p .scannerwork_java
+                                        ${SCANNER_HOME}/bin/sonar-scanner \\
+                                        -Dsonar.projectKey='${projectKey}' \\
+                                        -Dsonar.projectName='${projectDir}' \\
+                                        -Dsonar.sources=. \\
+                                        -Dsonar.java.binaries=target/classes \\
+                                        -Dsonar.working.directory=\$(pwd)/.scannerwork_java \\
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
@@ -176,23 +176,24 @@ pipeline {
 
                     // --- PYTHON ANALYSIS ---
                     def pythonProjects = [
-                        'ModelRecommendation': 'DataPredict:ModelRecommendation',
-                        'Preprocessing_Service': 'DataPredict:Preprocessing_Python'
+                        'ModelRecommendation': 'DataPredict_ModelRecommendation',
+                        'Preprocessing_Service': 'DataPredict_Preprocessing_Python'
                     ]
 
                     pythonProjects.each { projectDir, projectKey ->
                         parallelAnalysis["Sonar Python: ${projectDir}"] = {
                             dir(projectDir) {
                                 withSonarQubeEnv('DOCKER_SONAR') {
-                                    // Exclude Java files to prevent "missing binaries" error in Python scan
-                                    // .scannerwork_python avoids lock collision with Java scan in same dir
+                                    // Robust approach: create dir and use absolute path
                                     sh """
-                                        ${SCANNER_HOME}/bin/sonar-scanner \
-                                        -Dsonar.projectKey='${projectKey}' \
-                                        -Dsonar.projectName='${projectDir} (Python)' \
-                                        -Dsonar.sources=. \
-                                        -Dsonar.exclusions=**/*.java \
-                                        -Dsonar.working.directory=.scannerwork_python \
+                                        echo "Starting Python Analysis for ${projectDir}"
+                                        mkdir -p .scannerwork_python
+                                        ${SCANNER_HOME}/bin/sonar-scanner \\
+                                        -Dsonar.projectKey='${projectKey}' \\
+                                        -Dsonar.projectName='${projectDir} (Python)' \\
+                                        -Dsonar.sources=. \\
+                                        -Dsonar.exclusions=**/*.java \\
+                                        -Dsonar.working.directory=\$(pwd)/.scannerwork_python \\
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
