@@ -158,11 +158,13 @@ pipeline {
                             dir(projectDir) {
                                 withSonarQubeEnv('DOCKER_SONAR') {
                                     // Utilisation de tool 'SonarScanner' défini globalement en tant que SCANNER_HOME
+                                    // Make sure target/classes exists or is created by the build stage
                                     sh """
                                         ${SCANNER_HOME}/bin/sonar-scanner \
                                         -Dsonar.projectKey='${projectKey}' \
                                         -Dsonar.projectName='${projectDir}' \
                                         -Dsonar.sources=. \
+                                        -Dsonar.java.binaries=target/classes \
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
@@ -180,11 +182,13 @@ pipeline {
                         parallelAnalysis["Sonar Python: ${projectDir}"] = {
                             dir(projectDir) {
                                 withSonarQubeEnv('DOCKER_SONAR') {
+                                    // Exclude Java files to prevent "missing binaries" error in Python scan
                                     sh """
                                         ${SCANNER_HOME}/bin/sonar-scanner \
                                         -Dsonar.projectKey='${projectKey}' \
                                         -Dsonar.projectName='${projectDir} (Python)' \
                                         -Dsonar.sources=. \
+                                        -Dsonar.exclusions=**/*.java \
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
