@@ -159,12 +159,14 @@ pipeline {
                                 withSonarQubeEnv('DOCKER_SONAR') {
                                     // Utilisation de tool 'SonarScanner' défini globalement en tant que SCANNER_HOME
                                     // Make sure target/classes exists or is created by the build stage
+                                    // .scannerwork_java avoids lock collision with Python scan in same dir
                                     sh """
                                         ${SCANNER_HOME}/bin/sonar-scanner \
                                         -Dsonar.projectKey='${projectKey}' \
                                         -Dsonar.projectName='${projectDir}' \
                                         -Dsonar.sources=. \
                                         -Dsonar.java.binaries=target/classes \
+                                        -Dsonar.working.directory=.scannerwork_java \
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
@@ -183,12 +185,14 @@ pipeline {
                             dir(projectDir) {
                                 withSonarQubeEnv('DOCKER_SONAR') {
                                     // Exclude Java files to prevent "missing binaries" error in Python scan
+                                    // .scannerwork_python avoids lock collision with Java scan in same dir
                                     sh """
                                         ${SCANNER_HOME}/bin/sonar-scanner \
                                         -Dsonar.projectKey='${projectKey}' \
                                         -Dsonar.projectName='${projectDir} (Python)' \
                                         -Dsonar.sources=. \
                                         -Dsonar.exclusions=**/*.java \
+                                        -Dsonar.working.directory=.scannerwork_python \
                                         -Dsonar.host.url=http://sonarqube:9000
                                     """
                                 }
