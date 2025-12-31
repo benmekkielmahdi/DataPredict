@@ -23,14 +23,14 @@ DataPredict repose sur une architecture **Microservices Hybride** structurée se
 * **Workers (Scripts Python)** : Exécutés via `ProcessBuilder` pour l'analyse statistique et l'entraînement intensif.
 * **Expert (FastAPI)** : Un service Python dédié à la recommandation d'algorithmes via API REST.
 
+<img width="1224" height="900" alt="Screenshot 2025-12-31 at 22 55 22" src="https://github.com/user-attachments/assets/132f577c-53e4-4c6d-bc17-0cfbd3ab4ad2" />
 
-![Architecture](https://github.com/user-attachments/assets/0cc83e21-bc9e-41a0-b9dc-2b6e7a3f7c20)
 
 ---
 
 # Authentification Microservice
+![authF](https://github.com/user-attachments/assets/64fe1a0b-3d51-4401-a94c-79a89de6f351)
 
-![Auth_Microservice](https://github.com/user-attachments/assets/6ccff10f-9977-428f-b9b6-26ab6965e291)
 
 
 ## Description
@@ -58,7 +58,7 @@ Service d'authentification et d'autorisation basé sur Spring Boot. Gère la gé
 ---
 
 # Preprocessing Microservice
-![Preprocessing_Microservice](https://github.com/user-attachments/assets/d4ee37f8-47ef-463d-b4d0-2c58acec6afe)
+![PreF](https://github.com/user-attachments/assets/b2d823dd-79ba-4a4a-ad5f-60ace97ba5f6)
 
 
 ## Description
@@ -119,7 +119,7 @@ Microservice de pipeline de traitement de données qui gère l'acquisition, le p
 ---
 
 # Feature Selection Microservice
-![FeatureSelection_Microservice](https://github.com/user-attachments/assets/f96e1cbe-caf2-43bc-9a64-27bd855ef5c9)
+![featF](https://github.com/user-attachments/assets/23643bf1-55d0-45eb-a65c-e51b5c0e34ce)
 
 ## Description
 Microservice spécialisé dans la sélection et l'ingénierie de caractéristiques (features) pour pipelines de données analytiques. Intègre des algorithmes d'extraction, de filtrage et de scoring de features.
@@ -174,8 +174,8 @@ Microservice spécialisé dans la sélection et l'ingénierie de caractéristiqu
 ---
 
 # Recommendation Microservice
-![Recommandation_Microservice](https://github.com/user-attachments/assets/1acc04f9-8bb3-4bca-a089-23e5a100f993)
 
+![RecommF](https://github.com/user-attachments/assets/1cddd985-f483-4b99-a8ae-f5bc106fb225)
 
 ## Description
 Microservice intelligent de recommandation de modèles de machine learning. Analyse les caractéristiques des datasets et recommande les modèles les plus adaptés selon plusieurs critères pondérés, avec génération automatique d'hyperparamètres.
@@ -223,7 +223,7 @@ Microservice intelligent de recommandation de modèles de machine learning. Anal
 ---
 
 # Training Microservice
-![Training_Service](https://github.com/user-attachments/assets/07cce2e5-b4c1-420a-8112-00a8bd9c99d1)
+![TrainF](https://github.com/user-attachments/assets/08e3e00f-a684-4d35-8ea2-419de63c0232)
 
 
 ## Description
